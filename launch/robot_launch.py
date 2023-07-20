@@ -55,7 +55,7 @@ def generate_launch_description():
    # Launch them all!
    return LaunchDescription([
       motor_node,
-      cam_node,
-      node_robot_state_publisher,
+      #cam_node,
+      #node_robot_state_publisher,
       #lidar_driver_node
    ])

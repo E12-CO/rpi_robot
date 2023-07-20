@@ -28,20 +28,25 @@ class Rpi_Joy(Node):
         axes = msg.axes
         buttons = msg.buttons
         twstmsg = Twist()
-        y, x, z = axes[0], axes[1], axes[2]
+
+        # logitech extreme 3d pro
+        y, x = axes[0], axes[1]
+        rotatemode = buttons[2]
         twstmsg.linear.x, twstmsg.linear.y, twstmsg.linear.z, twstmsg.angular.x, twstmsg.angular.y, twstmsg.angular.z = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
         if x < -0.5:
-            twstmsg.linear.x = 1.0
+            twstmsg.linear.x = -5.0
         elif x > 0.5:
-            twstmsg.linear.x = -1.0
-        if y < -0.5:
-            twstmsg.linear.y = 1.0
-        elif y > 0.5:
-            twstmsg.linear.y = -1.0
-        if z < -0.5:
-            twstmsg.angular.z = -3.0
-        elif z > 0.5:
-            twstmsg.angular.z = 3.0
+            twstmsg.linear.x = 5.0
+        if rotatemode == 0:
+            if y < -0.5:
+                twstmsg.linear.y = -5.0
+            elif y > 0.5:
+                twstmsg.linear.y = 5.0
+        else:
+            if y < -0.5:
+                twstmsg.angular.z = -1.5
+            elif y > 0.5:
+                twstmsg.angular.z = 1.5
         self.publisher_.publish(twstmsg)
         
 
