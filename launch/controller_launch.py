@@ -51,7 +51,7 @@ def generate_launch_description():
    return LaunchDescription([
       joy_node,
       joy_converter_node,
-      #cam_node,
+      cam_node,
       #display_rviz,
       #slam_node
    ])

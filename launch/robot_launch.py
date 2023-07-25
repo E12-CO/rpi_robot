@@ -21,7 +21,11 @@ def generate_launch_description():
    motor_node = Node(package='rpi_robot', executable='rpi_motor')
 
    #Camera_pub node
-   cam_node = Node(package='rpi_robot', executable='rpi_cam')
+   cam_node = Node(package="v4l2_camera",
+            executable="v4l2_camera_node",
+            name="v4l2_camera_node",
+            parameters=[{"image_size": "[640,480]", "camera_frame_id": "camera_link_optical"}],
+        )
 
    #
    rpi_robot_description_path = os.path.join(
@@ -55,7 +59,7 @@ def generate_launch_description():
    # Launch them all!
    return LaunchDescription([
       motor_node,
-      #cam_node,
+      cam_node,
       #node_robot_state_publisher,
       #lidar_driver_node
    ])
