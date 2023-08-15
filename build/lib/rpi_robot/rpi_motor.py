@@ -60,34 +60,32 @@ class Rpi_Motor(Node):
         # Right Back
         GPIO.setup(In1RB,GPIO.OUT)
         GPIO.setup(In2RB,GPIO.OUT)
+ #       GPIO.setup(EnableRB,GPIO.OUT)
 
-        GPIO.output(In1LF,GPIO.LOW)
-        GPIO.output(In2LF,GPIO.LOW)
-        GPIO.output(In1LB,GPIO.LOW)
-        GPIO.output(In2LB,GPIO.LOW)
-        GPIO.output(In1RF,GPIO.LOW)
-        GPIO.output(In2RF,GPIO.LOW)
-        GPIO.output(In1RB,GPIO.LOW)
-        GPIO.output(In2RB,GPIO.LOW)
+#        GPIO.output(EnableLF, GPIO.HIGH)
+#	GPIO.output(EnableLB, GPIO.HIGH)
+#	GPIO.output(EnableRF, GPIO.HIGH)
+#	GPIO.output(EnableRB, GPIO.HIGH)
+               
 
     def listener_callback(self, msg):
         l_x,l_y,a_z = msg.linear.x,msg.linear.y,msg.angular.z
-        if ((l_x <= - 0.5) and (a_z == 0.0)):
+        if (l_x < - 0.5):
             #forward
             self.dumstate = 'forward'
-        elif ((l_x >= 0.5) and (a_z == 0.0)):
+        elif (l_x > 0.5):
             #backward
             self.dumstate = 'backward'
-        elif ((l_x >=  0.5) and (a_z > 0.0)):
+        elif (l_y < -0.5):
             #rightward
             self.dumstate = 'rightward'
-        elif ((l_x >=  0.5) and (a_z < 0.0)):
+        elif (l_y > 0.5):
             #leftward
             self.dumstate = 'leftward'
-        elif ((l_x == 0.0) and (a_z > 0.0)):
+        elif (a_z > 0.5):
             #rotateleft
             self.dumstate = 'rotateleft'
-        elif ((l_x == 0.0) and (a_z < 0.0)):
+        elif (a_z < -0.5):
             #rotateright
             self.dumstate = 'rotateright'
         else:
@@ -95,7 +93,7 @@ class Rpi_Motor(Node):
 
         if(self.dumstate != self.state):
             self.state = self.dumstate
-            if (self.state == 'backward'):
+            if (self.state == 'forward'):
                 GPIO.output(In1LF,GPIO.LOW)
                 GPIO.output(In2LF,GPIO.HIGH)
                 GPIO.output(In1LB,GPIO.LOW)
@@ -104,7 +102,7 @@ class Rpi_Motor(Node):
                 GPIO.output(In2RF,GPIO.LOW)
                 GPIO.output(In1RB,GPIO.HIGH)
                 GPIO.output(In2RB,GPIO.LOW)
-            elif (self.state == 'forward'):
+            elif (self.state == 'backward'):
                 GPIO.output(In1LF,GPIO.HIGH)
                 GPIO.output(In2LF,GPIO.LOW)
                 GPIO.output(In1LB,GPIO.HIGH)
@@ -132,32 +130,24 @@ class Rpi_Motor(Node):
                 GPIO.output(In1RB,GPIO.LOW)
                 GPIO.output(In2RB,GPIO.HIGH)
             elif (self.state == 'rotateleft'):
-                GPIO.output(In1LF,GPIO.HIGH)
+                GPIO.output(In1LF,GPIO.LOW)
                 GPIO.output(In2LF,GPIO.LOW)
-                GPIO.output(In1LB,GPIO.HIGH)
+                GPIO.output(In1LB,GPIO.LOW)
                 GPIO.output(In2LB,GPIO.LOW)
                 GPIO.output(In1RF,GPIO.HIGH)
                 GPIO.output(In2RF,GPIO.LOW)
                 GPIO.output(In1RB,GPIO.HIGH)
                 GPIO.output(In2RB,GPIO.LOW)
             elif (self.state == 'rotateright'):
-                GPIO.output(In1LF,GPIO.LOW)
-                GPIO.output(In2LF,GPIO.HIGH)
-                GPIO.output(In1LB,GPIO.LOW)
-                GPIO.output(In2LB,GPIO.HIGH)
+                GPIO.output(In1LF,GPIO.HIGH)
+                GPIO.output(In2LF,GPIO.LOW)
+                GPIO.output(In1LB,GPIO.HIGH)
+                GPIO.output(In2LB,GPIO.LOW)
                 GPIO.output(In1RF,GPIO.LOW)
-                GPIO.output(In2RF,GPIO.HIGH)
+                GPIO.output(In2RF,GPIO.LOW)
                 GPIO.output(In1RB,GPIO.LOW)
-                GPIO.output(In2RB,GPIO.HIGH)
-            elif (self.state == 'idle'):
-            	GPIO.output(In1LF,GPIO.LOW)
-            	GPIO.output(In2LF,GPIO.LOW)
-            	GPIO.output(In1LB,GPIO.LOW)
-            	GPIO.output(In2LB,GPIO.LOW)
-            	GPIO.output(In1RF,GPIO.LOW)
-            	GPIO.output(In2RF,GPIO.LOW)
-            	GPIO.output(In1RB,GPIO.LOW)
-            	GPIO.output(In2RB,GPIO.LOW)            
+                GPIO.output(In2RB,GPIO.LOW)
+            
 
         
 

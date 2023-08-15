@@ -1,0 +1,6 @@
+[console_scripts]
+controller_cam = rpi_robot.controller_cam:main
+rpi_cam = rpi_robot.rpi_cam:main
+rpi_joy = rpi_robot.rpi_joy:main
+rpi_motor = rpi_robot.rpi_motor:main
+
