@@ -1,9 +1,10 @@
 #sub cmd_vel then drive motor
+# Modified to work with OrangePi
 
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSReliabilityPolicy
-import RPi.GPIO as GPIO 
+import OPi.GPIO as GPIO 
 
 from geometry_msgs.msg import Twist
 
@@ -42,7 +43,7 @@ class Rpi_Motor(Node):
 
     def pinSetup(self):
 
-        GPIO.setmode(GPIO.BCM)
+        GPIO.setmode(GPIO.SUNXI)
         # Left Front
         GPIO.setup(In1LF,GPIO.OUT)
         GPIO.setup(In2LF,GPIO.OUT)
@@ -63,18 +64,11 @@ class Rpi_Motor(Node):
         GPIO.setup(In2RB,GPIO.OUT)
         GPIO.setup(EnableRB,GPIO.OUT)
 
-        ELB = GPIO.PWM(EnableLB,1000)
-        ELB.start(25)
-
-        ELF = GPIO.PWM(EnableLF,1000)
-        ELF.start(25)
-
-        ERB = GPIO.PWM(EnableRB,1000)
-        ERB.start(25)
-
-        ERF = GPIO.PWM(EnableRF,1000)
-        ERF.start(25)
-       
+        GPIO.output(EnableLF, GPIO.HIGH)
+	GPIO.output(EnableLB, GPIO.HIGH)
+	GPIO.output(EnableRF, GPIO.HIGH)
+	GPIO.output(EnableRB, GPIO.HIGH)
+               
 
     def listener_callback(self, msg):
         l_x,l_y,a_z = msg.linear.x,msg.linear.y,msg.angular.z
