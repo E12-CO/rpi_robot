@@ -72,22 +72,22 @@ class Rpi_Motor(Node):
 
     def listener_callback(self, msg):
         l_x,l_y,a_z = msg.linear.x,msg.linear.y,msg.angular.z
-        if ((l_x <= - 0.5) and (a_z == 0.0)):
-            #forward
-            self.dumstate = 'forward'
-        elif ((l_x >= 0.5) and (a_z == 0.0)):
-            #backward
-            self.dumstate = 'backward'
-        elif ((l_x >=  0.5) and (a_z > 0.0)):
+        if (l_x < -0.5):
             #rightward
             self.dumstate = 'rightward'
-        elif ((l_x >=  0.5) and (a_z < 0.0)):
+        elif(l_x > 0.5):
             #leftward
             self.dumstate = 'leftward'
-        elif ((l_x == 0.0) and (a_z > 0.0)):
+        elif (l_y < -0.5):
+            #forward
+            self.dumstate = 'forward'
+        elif (l_y > 0.5):
+            #backward
+            self.dumstate = 'backward'
+        elif (a_z < -0.5):
             #rotateleft
             self.dumstate = 'rotateleft'
-        elif ((l_x == 0.0) and (a_z < 0.0)):
+        elif (a_z > 0.5):
             #rotateright
             self.dumstate = 'rotateright'
         else:
