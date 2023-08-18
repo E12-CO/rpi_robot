@@ -11,28 +11,28 @@ from geometry_msgs.msg import Twist
 # Left Front
 EnableLF = PWM(0, 1)
 EnableLF.frequency = 10e3
-EnableLF.duty_cycle = 0.5
+EnableLF.duty_cycle = 0.0
 In1LF =  73 #'PC9'    
 In2LF =  70 #'PC6'
 
 # Left Back
 EnableLB = PWM(0, 2)
 EnableLB.frequency = 10e3
-EnableLB.duty_cycle = 0.5
+EnableLB.duty_cycle = 0.0
 In1LB =  69 # 'PC5'
 In2LB =  72 # 'PC8'
 
 # Right Front
 EnableRF = PWM(0, 3)
 EnableRF.frequency = 10e3
-EnableRF.duty_cycle = 0.5
+EnableRF.duty_cycle = 0.0
 In1RF = 74 #'PC10'
 In2RF = 78 #'PC14'
 
 # Right Back
 EnableRB = PWM(0, 4)
 EnableRB.frequency = 10e3
-EnableRB.duty_cycle = 0.5
+EnableRB.duty_cycle = 0.0
 In1RB = 71 # 'PC7'    
 In2RB = 75 # 'PC11'
 
@@ -80,125 +80,69 @@ class Rpi_Motor(Node):
         GPIO.output(In2RB,GPIO.LOW)
 
     def mecanum_cal(self, x_vel, y_vel, az_vel):
-        M1 = x_vel + y_vel - az_vel
-        M2 = -x_vel + y_vel - az_vel
-        M3 = -x_vel - y_vel - az_vel
-        M4 = x_vel - y_vel - az_vel
+        #y_vel = -y_vel # invert the vector
 
-        maxComponent = abs(M1)
-        if(maxComponent < abs(M2)):
-            maxComponent = abs(M2)
-        if(maxComponent < abs(M3)):
-            maxComponent = abs(M3)
-        if(maxComponent < abs(M4)):
-            maxComponent = abs(M4)
-        if(maxComponent > 1.0):
-            maxComponent = 1.0
+        Denom = max(abs(self.x_vel), abs(self.y_vel), abs(self.az_vel)) # calculate the demoniator 
 
-        m_pwm1 = M1 / maxComponent
-        m_pwm2 = M2 / maxComponent
-        m_pwm3 = M3 / maxComponent
-        m_pwm4 = M4 / maxComponent
+        LeftFront  = (self.x_vel + self.y_vel + self.az_vel) / Denom
+        LeftBack   = (self.x_vel - self.y_vel + self.az_vel) / Denom
+        RighFront  = (self.x_vel - self.y_vel - self.az_vel) / Denom
+        RightBack  = (self.x_vel + self.y_vel - self.az_vel) / Denom
 
-        print("m_pwm1: "+str(m_pwm1))
-        print("m_pwm2: "+str(m_pwm2))
-        print("m_pwm3: "+str(m_pwm3))
-        print("m_pwm4: "+str(m_pwm4))
+        print("LF: "+str(LeftFront))
+        print("LB: "+str(LeftBack))
+        print("RF: "+str(RightFront))
+        print("RB: "+str(RightBack))
 
+        EnableLF.duty_cycle = abs(LeftFront)
+        EnableLB.duty_cycle = abs(LeftBack) 
+        EnableRF.duty_cycle = abs(RightFront)
+        EnableRB.duty_cycle = abs(RightBack)
 
+        if(LeftFront > 0):
+            GPIO.output(In1LF, GPIO.HIGH)
+            GPIO.output(In2LF, GPIO.LOW)
+        elif(LeftFront < 0): 
+            GPIO.output(In1LF, GPIO.LOW)
+            GPIO.output(In2LF, GPIO.HIGH)
+        else:
+            GPIO.output(In1LF, GPIO.LOW)
+            GPIO.output(In2LF, GPIO.LOW)
+
+        if(LeftBack > 0):
+            GPIO.output(In1LB, GPIO.HIGH)
+            GPIO.output(In2LB, GPIO.LOW)
+        elif(LeftFront < 0):
+            GPIO.output(In1LB, GPIO.LOW)
+            GPIO.output(In2LB, GPIO.HIGH)
+        else:
+            GPIO.output(In1LB, GPIO.LOW)
+            GPIO.output(In2LB, GPIO.LOW)
+
+        if(RightFront > 0):
+            GPIO.output(In1RF, GPIO.LOW)
+            GPIO.output(In2RF, GPIO.HIGH)
+        elif(RightFront < 0):
+            GPIO.output(In1RF, GPIO.HIGH)
+            GPIO.output(In2RF, GPIO.LOW)
+        else:
+            GPIO.output(In1RF, GPIO.LOW)
+            GPIO.output(In2RF, GPIO.LOW)
+
+        if(RightBack > 0):
+            GPIO.output(In1RB, GPIO.LOW)
+            GPIO.output(In2RB, GPIO.HIGH)
+        elif(RightBack < 0):
+            GPIO.output(In1RB, GPIO.HIGH)
+            GPIO.output(In2RB, GPIO.LOW)
+        else:
+            GPIO.output(In1RB, GPIO.LOW)
+            GPIO.output(In2RB, GPIO.LOW)
 
 
     def listener_callback(self, msg):
         l_x,l_y,a_z = msg.linear.x,msg.linear.y,msg.angular.z
-#        self.mecanum_cal(l_x, l_y, a_z)
-
-        if (l_x < -0.5):
-            #rightward
-            self.dumstate = 'rightward'
-        elif(l_x > 0.5):
-            #leftward
-            self.dumstate = 'leftward'
-        elif (l_y < -0.5):
-            #forward
-            self.dumstate = 'forward'
-        elif (l_y > 0.5):
-            #backward
-            self.dumstate = 'backward'
-        elif (a_z < -0.5):
-            #rotateleft
-            self.dumstate = 'rotateleft'
-        elif (a_z > 0.5):
-            #rotateright
-            self.dumstate = 'rotateright'
-        else:
-            self.dumstate = 'idle'
-
-        if(self.dumstate != self.state):
-            self.state = self.dumstate
-            if (self.state == 'backward'):
-                GPIO.output(In1LF,GPIO.LOW)
-                GPIO.output(In2LF,GPIO.HIGH)
-                GPIO.output(In1LB,GPIO.LOW)
-                GPIO.output(In2LB,GPIO.HIGH)
-                GPIO.output(In1RF,GPIO.HIGH)
-                GPIO.output(In2RF,GPIO.LOW)
-                GPIO.output(In1RB,GPIO.HIGH)
-                GPIO.output(In2RB,GPIO.LOW)
-            elif (self.state == 'forward'):
-                GPIO.output(In1LF,GPIO.HIGH)
-                GPIO.output(In2LF,GPIO.LOW)
-                GPIO.output(In1LB,GPIO.HIGH)
-                GPIO.output(In2LB,GPIO.LOW)
-                GPIO.output(In1RF,GPIO.LOW)
-                GPIO.output(In2RF,GPIO.HIGH)
-                GPIO.output(In1RB,GPIO.LOW)
-                GPIO.output(In2RB,GPIO.HIGH)
-            elif (self.state == 'rightward'):
-                GPIO.output(In1LF,GPIO.LOW)
-                GPIO.output(In2LF,GPIO.HIGH)
-                GPIO.output(In1LB,GPIO.HIGH)
-                GPIO.output(In2LB,GPIO.LOW)
-                GPIO.output(In1RF,GPIO.LOW)
-                GPIO.output(In2RF,GPIO.HIGH)
-                GPIO.output(In1RB,GPIO.HIGH)
-                GPIO.output(In2RB,GPIO.LOW)
-            elif (self.state == 'leftward'):
-                GPIO.output(In1LF,GPIO.HIGH)
-                GPIO.output(In2LF,GPIO.LOW)
-                GPIO.output(In1LB,GPIO.LOW)
-                GPIO.output(In2LB,GPIO.HIGH)
-                GPIO.output(In1RF,GPIO.HIGH)
-                GPIO.output(In2RF,GPIO.LOW)
-                GPIO.output(In1RB,GPIO.LOW)
-                GPIO.output(In2RB,GPIO.HIGH)
-            elif (self.state == 'rotateleft'):
-                GPIO.output(In1LF,GPIO.HIGH)
-                GPIO.output(In2LF,GPIO.LOW)
-                GPIO.output(In1LB,GPIO.HIGH)
-                GPIO.output(In2LB,GPIO.LOW)
-                GPIO.output(In1RF,GPIO.HIGH)
-                GPIO.output(In2RF,GPIO.LOW)
-                GPIO.output(In1RB,GPIO.HIGH)
-                GPIO.output(In2RB,GPIO.LOW)
-            elif (self.state == 'rotateright'):
-                GPIO.output(In1LF,GPIO.LOW)
-                GPIO.output(In2LF,GPIO.HIGH)
-                GPIO.output(In1LB,GPIO.LOW)
-                GPIO.output(In2LB,GPIO.HIGH)
-                GPIO.output(In1RF,GPIO.LOW)
-                GPIO.output(In2RF,GPIO.HIGH)
-                GPIO.output(In1RB,GPIO.LOW)
-                GPIO.output(In2RB,GPIO.HIGH)
-            elif (self.state == 'idle'):
-            	GPIO.output(In1LF,GPIO.LOW)
-            	GPIO.output(In2LF,GPIO.LOW)
-            	GPIO.output(In1LB,GPIO.LOW)
-            	GPIO.output(In2LB,GPIO.LOW)
-            	GPIO.output(In1RF,GPIO.LOW)
-            	GPIO.output(In2RF,GPIO.LOW)
-            	GPIO.output(In1RB,GPIO.LOW)
-            	GPIO.output(In2RB,GPIO.LOW)            
-
+        self.mecanum_cal(l_x, l_y, a_z)
         
 
 def main(args=None):
