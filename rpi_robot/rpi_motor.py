@@ -82,57 +82,60 @@ class Rpi_Motor(Node):
     def mecanum_cal(self, x_vel, y_vel, az_vel):
         #y_vel = -y_vel # invert the vector
 
-        Denom = max(abs(self.x_vel), abs(self.y_vel), abs(self.az_vel)) # calculate the demoniator 
+        Denom = max(abs(x_vel), abs(y_vel), abs(az_vel)) # calculate the demoniator 
 
-        LeftFront  = (self.x_vel + self.y_vel + self.az_vel) / Denom
-        LeftBack   = (self.x_vel - self.y_vel + self.az_vel) / Denom
-        RighFront  = (self.x_vel - self.y_vel - self.az_vel) / Denom
-        RightBack  = (self.x_vel + self.y_vel - self.az_vel) / Denom
+        if(Denom < 1):
+            Denom = 1
+
+        LeftFront  = (x_vel - y_vel + az_vel) / Denom
+        LeftBack   = (x_vel + y_vel + az_vel) / Denom
+        RightFront = (x_vel + y_vel - az_vel) / Denom
+        RightBack  = (x_vel - y_vel - az_vel) / Denom
 
         print("LF: "+str(LeftFront))
         print("LB: "+str(LeftBack))
         print("RF: "+str(RightFront))
         print("RB: "+str(RightBack))
 
-        EnableLF.duty_cycle = abs(LeftFront)
-        EnableLB.duty_cycle = abs(LeftBack) 
-        EnableRF.duty_cycle = abs(RightFront)
-        EnableRB.duty_cycle = abs(RightBack)
+        EnableLF.duty_cycle = max(min(1.0, abs(LeftFront)), 0) * 0.4
+        EnableLB.duty_cycle = max(min(1.0, abs(LeftBack)), 0)  
+        EnableRF.duty_cycle = max(min(1.0, abs(RightFront)), 0) * 0.4
+        EnableRB.duty_cycle = max(min(1.0, abs(RightBack)), 0)
 
-        if(LeftFront > 0):
+        if(LeftFront < 0):
             GPIO.output(In1LF, GPIO.HIGH)
             GPIO.output(In2LF, GPIO.LOW)
-        elif(LeftFront < 0): 
+        elif(LeftFront > 0): 
             GPIO.output(In1LF, GPIO.LOW)
             GPIO.output(In2LF, GPIO.HIGH)
         else:
             GPIO.output(In1LF, GPIO.LOW)
             GPIO.output(In2LF, GPIO.LOW)
 
-        if(LeftBack > 0):
+        if(LeftBack < 0):
             GPIO.output(In1LB, GPIO.HIGH)
             GPIO.output(In2LB, GPIO.LOW)
-        elif(LeftFront < 0):
+        elif(LeftFront > 0):
             GPIO.output(In1LB, GPIO.LOW)
             GPIO.output(In2LB, GPIO.HIGH)
         else:
             GPIO.output(In1LB, GPIO.LOW)
             GPIO.output(In2LB, GPIO.LOW)
 
-        if(RightFront > 0):
+        if(RightFront < 0):
             GPIO.output(In1RF, GPIO.LOW)
             GPIO.output(In2RF, GPIO.HIGH)
-        elif(RightFront < 0):
+        elif(RightFront > 0):
             GPIO.output(In1RF, GPIO.HIGH)
             GPIO.output(In2RF, GPIO.LOW)
         else:
             GPIO.output(In1RF, GPIO.LOW)
             GPIO.output(In2RF, GPIO.LOW)
 
-        if(RightBack > 0):
+        if(RightBack < 0):
             GPIO.output(In1RB, GPIO.LOW)
             GPIO.output(In2RB, GPIO.HIGH)
-        elif(RightBack < 0):
+        elif(RightBack > 0):
             GPIO.output(In1RB, GPIO.HIGH)
             GPIO.output(In2RB, GPIO.LOW)
         else:
